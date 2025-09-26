@@ -11,30 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout repo
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 2. Setup JDK 17
       - name: Setup JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
-      # 3. Setup Gradle
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 4. Add permission ke gradlew
+      # 👉 FIX: regenerate gradle wrapper jika corrupt/placeholder
+      - name: Generate Gradle Wrapper
+        run: |
+          if [ ! -f ./gradlew ] || [ ! -s ./gradle/wrapper/gradle-wrapper.jar ]; then
+            echo "Gradle wrapper missing or invalid, regenerating..."
+            gradle wrapper --gradle-version 8.2.1
+          fi
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      # 5. Decode keystore dari secrets (base64)
       - name: Decode Keystore
         run: echo "${{ secrets.SIGNING_KEY }}" | base64 -d > $GITHUB_WORKSPACE/keystore.jks
 
-      # 6. Build Release APK signed
       - name: Build Release APK
         run: ./gradlew assembleRelease \
           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/keystore.jks \
@@ -42,7 +44,6 @@ jobs:
           -Pandroid.injected.signing.key.alias=${{ secrets.SIGNING_KEY_ALIAS }} \
           -Pandroid.injected.signing.key.password=${{ secrets.SIGNING_KEY_ALIAS_PASSWORD }}
 
-      # 7. Upload APK sebagai artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
