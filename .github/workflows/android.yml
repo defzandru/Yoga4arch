@@ -20,16 +20,6 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      # Install Gradle CLI
-      - name: Install Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      # Generate Gradle Wrapper (kalau belum ada)
-      - name: Generate Gradle Wrapper
-        run: |
-          gradle wrapper --gradle-version 8.5
-          chmod +x gradlew
-
       # Decode keystore dari secret dan simpan ke file
       - name: Decode Keystore
         run: |
