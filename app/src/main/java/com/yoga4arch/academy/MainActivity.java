@@ -20,7 +20,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private static final String USER_URL = "https://yoga4archacademy.com/wp-json/wp/v2/users/me";
+    private static final String USER_URL = "https://yoga4archacademy.com/";
 
     TextView tvInfo;
     Button btnLogout;
