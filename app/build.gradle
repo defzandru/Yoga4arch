@@ -3,19 +3,22 @@ plugins {
 }
 
 android {
-    namespace "com.yoga4arch.academy"
+    namespace "com.yoga4archacademy.app"   // ganti sesuai package kamu
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.yoga4arch.academy"
+        applicationId "com.yoga4archacademy.app"  // ganti sesuai kebutuhan
         minSdk 21
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         release {
+            // File keystore harus ada di root project atau sesuaikan path-nya
             storeFile file("yoga4archacademy.p12")
             storePassword System.getenv("KEYSTORE_PASSWORD")
             keyAlias System.getenv("KEY_ALIAS")
@@ -27,7 +30,13 @@ android {
         release {
             minifyEnabled false
             shrinkResources false
+            debuggable false
             signingConfig signingConfigs.release
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            debuggable true
         }
     }
 
@@ -39,6 +48,10 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.android.volley:volley:1.2.1'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
