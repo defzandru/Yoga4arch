@@ -20,25 +20,18 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      # 👉 Install Gradle CLI langsung
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-
-      # 👉 FIX: regenerate gradle wrapper jika corrupt/placeholder
-      - name: Generate Gradle Wrapper
-        run: |
-          if [ ! -f ./gradlew ] || [ ! -s ./gradle/wrapper/gradle-wrapper.jar ]; then
-            echo "Gradle wrapper missing or invalid, regenerating..."
-            gradle wrapper --gradle-version 8.2.1
-          fi
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        with:
+          gradle-version: 8.2.1
 
       - name: Decode Keystore
         run: echo "${{ secrets.SIGNING_KEY }}" | base64 -d > $GITHUB_WORKSPACE/keystore.jks
 
+      # 👉 Build pakai gradle CLI, bukan ./gradlew
       - name: Build Release APK
-        run: ./gradlew assembleRelease \
+        run: gradle assembleRelease \
           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/keystore.jks \
           -Pandroid.injected.signing.store.password=${{ secrets.SIGNING_KEY_PASSWORD }} \
           -Pandroid.injected.signing.key.alias=${{ secrets.SIGNING_KEY_ALIAS }} \
