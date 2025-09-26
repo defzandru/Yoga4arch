@@ -1,7 +1,9 @@
 apply plugin: 'com.android.application'
 
 android {
+    namespace "com.yoga4arch.academy"
     compileSdkVersion 34
+
     defaultConfig {
         applicationId "com.yoga4arch.academy"
         minSdkVersion 21
@@ -9,6 +11,7 @@ android {
         versionCode 1
         versionName "1.0"
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
