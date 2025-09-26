@@ -11,27 +11,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout repo
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 2. Setup JDK 17
       - name: Setup JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Grant execute permission for Gradlew
-        run: chmod +x ./gradlew
+      # 3. Setup Gradle
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
-      - name: Build with Gradle (signed)
+      # 4. Add permission ke gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 5. Decode keystore dari secrets (base64)
+      - name: Decode Keystore
+        run: echo "${{ secrets.SIGNING_KEY }}" | base64 -d > $GITHUB_WORKSPACE/keystore.jks
+
+      # 6. Build Release APK signed
+      - name: Build Release APK
         run: ./gradlew assembleRelease \
           -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/keystore.jks \
-          -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
-          -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
-          -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+          -Pandroid.injected.signing.store.password=${{ secrets.SIGNING_KEY_PASSWORD }} \
+          -Pandroid.injected.signing.key.alias=${{ secrets.SIGNING_KEY_ALIAS }} \
+          -Pandroid.injected.signing.key.password=${{ secrets.SIGNING_KEY_ALIAS_PASSWORD }}
 
+      # 7. Upload APK sebagai artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: Yoga4archacademy-APK
+          name: release-apk
           path: app/build/outputs/apk/release/app-release.apk
