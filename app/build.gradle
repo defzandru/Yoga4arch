@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace "com.yoga4archacademy.app"   // ganti sesuai package kamu
+    namespace "com.yoga4arch.academy"
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.yoga4archacademy.app"  // ganti sesuai kebutuhan
+        applicationId "com.yoga4arch.academy"
         minSdk 21
         targetSdk 34
         versionCode 1
