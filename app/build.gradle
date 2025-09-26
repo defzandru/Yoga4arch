@@ -1,13 +1,15 @@
-apply plugin: 'com.android.application'
+plugins {
+    id 'com.android.application'
+}
 
 android {
     namespace "com.yoga4arch.academy"
-    compileSdkVersion 34
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.yoga4arch.academy"
-        minSdkVersion 21
-        targetSdkVersion 34
+        minSdk 21
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
