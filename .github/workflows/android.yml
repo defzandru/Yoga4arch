@@ -34,13 +34,13 @@ jobs:
 
       # 5. Decode keystore dari secret
       - name: Prepare Keystore
-        run: echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 -d > $GITHUB_WORKSPACE/keystore.jks
+        run: echo "${{ secrets.SIGNING_KEYSTORE_BASE64 }}" | base64 -d > $GITHUB_WORKSPACE/yoga4archacademy.p12
 
       # 6. Build APK Release
       - name: Build Release APK
         run: |
           ./gradlew :app:assembleRelease --warning-mode all \
-            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/keystore.jks \
+            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/yoga4archacademy.p12 \
             -Pandroid.injected.signing.store.password=${{ secrets.SIGNING_STORE_PASSWORD }} \
             -Pandroid.injected.signing.key.alias=${{ secrets.SIGNING_KEY_ALIAS }} \
             -Pandroid.injected.signing.key.password=${{ secrets.SIGNING_KEY_PASSWORD }}
