@@ -17,6 +17,8 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar progress;
     private TextView tvMessage;
 
+    private static final String LOGIN_URL = "https://yoga4archacademy.cloud/wp-json/jwt-auth/v1/token";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

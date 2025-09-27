@@ -29,7 +29,7 @@ public class RegisterActivity extends AppCompatActivity {
     private ProgressBar progress;
     private TextView tvMessage;
 
-    private static final String REGISTER_URL = "https://yoga4archacademy.cloud/wp-json/wp/v2/users";
+    private static final String REGISTER_URL = "https://yoga4archacademy.cloud/wp-json/jwt-auth/v1/register";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
