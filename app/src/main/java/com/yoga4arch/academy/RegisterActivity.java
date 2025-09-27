@@ -1,47 +1,51 @@
 package com.yoga4arch.academy;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Patterns;
 import android.view.View;
-import android.widget.*;
-import androidx.annotation.Nullable;
-import okhttp3.*;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
-import org.json.JSONException;
+import androidx.appcompat.app.AppCompatActivity;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+
 import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class RegisterActivity extends Activity {
+public class RegisterActivity extends AppCompatActivity {
 
-    private EditText edtUsername, edtEmail, edtPassword, edtFullName;
+    private EditText edtUsername, edtEmail, edtPassword, edtFullname;
     private Button btnRegister, btnGoLogin;
     private ProgressBar progress;
     private TextView tvMessage;
 
-    // Endpoint public register (plugin custom)
-    private static final String REGISTER_URL_PLUGIN = "https://yoga4archacademy.cloud/wp-json/yoga4arch/v1/register";
-
-    private final OkHttpClient client = new OkHttpClient();
+    private static final String REGISTER_URL = "https://yoga4archacademy.cloud/wp-json/wp/v2/users";
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
         edtUsername = findViewById(R.id.edtUsername);
         edtEmail = findViewById(R.id.edtEmail);
         edtPassword = findViewById(R.id.edtPassword);
-        edtFullName = findViewById(R.id.edtFullName);
+        edtFullname = findViewById(R.id.edtFullname);
         btnRegister = findViewById(R.id.btnRegister);
         btnGoLogin = findViewById(R.id.btnGoLogin);
         progress = findViewById(R.id.progress);
         tvMessage = findViewById(R.id.tvMessage);
 
-        btnRegister.setOnClickListener(v -> attemptRegister());
+        btnRegister.setOnClickListener(v -> registerUser());
         btnGoLogin.setOnClickListener(v -> {
             Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
             startActivity(intent);
@@ -49,100 +53,74 @@ public class RegisterActivity extends Activity {
         });
     }
 
-    private void attemptRegister() {
-        tvMessage.setText("");
+    private void registerUser() {
         String username = edtUsername.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
-        String password = edtPassword.getText().toString();
-        String fullname = edtFullName.getText().toString().trim();
+        String password = edtPassword.getText().toString().trim();
+        String fullname = edtFullname.getText().toString().trim();
 
-        if (!validate(username, email, password)) return;
+        if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            tvMessage.setText("Semua field wajib diisi!");
+            tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+            return;
+        }
 
         progress.setVisibility(View.VISIBLE);
-        btnRegister.setEnabled(false);
+        tvMessage.setText("");
+
+        OkHttpClient client = new OkHttpClient();
 
         JSONObject json = new JSONObject();
         try {
             json.put("username", username);
             json.put("email", email);
             json.put("password", password);
-            if (!TextUtils.isEmpty(fullname)) json.put("name", fullname);
-        } catch (JSONException e) {
-            showError("JSON error: " + e.getMessage());
-            return;
+            if (!fullname.isEmpty()) {
+                json.put("name", fullname);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
+        RequestBody body = RequestBody.create(
+                json.toString(),
+                MediaType.parse("application/json; charset=utf-8")
+        );
 
         Request request = new Request.Builder()
-                .url(REGISTER_URL_PLUGIN)
+                .url(REGISTER_URL)
                 .post(body)
-                .header("Accept", "application/json")
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
-            @Override public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> showError("Network error: " + e.getMessage()));
-            }
-            @Override public void onResponse(Call call, Response response) throws IOException {
-                final String respBody = response.body() != null ? response.body().string() : "";
+            @Override
+            public void onFailure(Call call, IOException e) {
                 runOnUiThread(() -> {
                     progress.setVisibility(View.GONE);
-                    btnRegister.setEnabled(true);
-                    if (response.isSuccessful()) {
-                        tvMessage.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
-                        tvMessage.setText("Registrasi berhasil. Silakan login.");
+                    tvMessage.setText("Registrasi gagal. Cek koneksi!");
+                    tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
+                });
+            }
 
-                        // Redirect otomatis ke LoginActivity
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                runOnUiThread(() -> progress.setVisibility(View.GONE));
+                if (response.isSuccessful()) {
+                    runOnUiThread(() -> {
+                        tvMessage.setText("Registrasi berhasil. Silakan login.");
+                        tvMessage.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+
                         Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                         startActivity(intent);
                         finish();
-
-                    } else {
-                        String msg = parseMessage(respBody);
+                    });
+                } else {
+                    runOnUiThread(() -> {
+                        tvMessage.setText("Registrasi gagal. Coba lagi.");
                         tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-                        tvMessage.setText("Gagal: " + msg + " (HTTP " + response.code() + ")");
-                    }
-                });
+                    });
+                }
             }
         });
-    }
-
-    private boolean validate(String username, String email, String password) {
-        if (TextUtils.isEmpty(username) || username.length() < 3) {
-            edtUsername.setError("Username minimal 3 karakter");
-            return false;
-        }
-        if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            edtEmail.setError("Email tidak valid");
-            return false;
-        }
-        if (TextUtils.isEmpty(password) || password.length() < 8) {
-            edtPassword.setError("Password minimal 8 karakter");
-            return false;
-        }
-        return true;
-    }
-
-    private void showError(String msg) {
-        runOnUiThread(() -> {
-            progress.setVisibility(View.GONE);
-            btnRegister.setEnabled(true);
-            tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
-            tvMessage.setText(msg);
-        });
-    }
-
-    private String parseMessage(String body) {
-        if (body == null) return "No response body";
-        try {
-            JSONObject j = new JSONObject(body);
-            if (j.has("message")) return j.optString("message");
-            if (j.has("data")) return j.optString("data");
-            if (j.has("code")) return j.optString("code");
-            return body;
-        } catch (JSONException e) {
-            return body.length() > 200 ? body.substring(0, 200) : body;
-        }
     }
 }
