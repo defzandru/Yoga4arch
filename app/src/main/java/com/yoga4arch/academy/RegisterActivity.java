@@ -134,15 +134,15 @@ public class RegisterActivity extends Activity {
 
     private boolean validate(String username, String email, String password) {
         if (TextUtils.isEmpty(username) || username.length() < 3) {
-            etUsername.setError("Username minimal 3 karakter");
+            edtUsername.setError("Username minimal 3 karakter");
             return false;
         }
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            etEmail.setError("Email tidak valid");
+            edtEmail.setError("Email tidak valid");
             return false;
         }
         if (TextUtils.isEmpty(password) || password.length() < 8) {
-            etPassword.setError("Password minimal 8 karakter");
+            edtPassword.setError("Password minimal 8 karakter");
             return false;
         }
         return true;
