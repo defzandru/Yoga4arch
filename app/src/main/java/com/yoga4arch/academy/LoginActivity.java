@@ -30,73 +30,70 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // if already logged in -> go to main
-        MyAppPrefs prefs = new MyAppPrefs(this);
-        if (prefs.getToken() != null) {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-            return;
-        }
-
         setContentView(R.layout.activity_login);
 
         edtUsername = findViewById(R.id.edtUsername);
         edtPassword = findViewById(R.id.edtPassword);
         btnLogin = findViewById(R.id.btnLogin);
 
-        queue = Volley.newRequestQueue(this);
-
-        btnLogin.setOnClickListener(v -> attemptLogin());
+        btnLogin.setOnClickListener(v -> doLogin());
     }
 
-    private void attemptLogin() {
+    private void doLogin() {
         String username = edtUsername.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
 
         if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Username & password harus diisi", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Isi username & password!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        try {
-            JSONObject body = new JSONObject();
-            body.put("username", username);
-            body.put("password", password);
+        MediaType JSON = MediaType.get("application/json; charset=utf-8");
+        String json = "{ \"username\":\"" + username + "\", \"password\":\"" + password + "\" }";
+        RequestBody body = RequestBody.create(json, JSON);
 
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, LOGIN_URL, body,
-                    response -> {
+        Request request = new Request.Builder()
+                .url(LOGIN_URL)
+                .post(body)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() ->
+                        Toast.makeText(LoginActivity.this, "Login gagal: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String resp = response.body().string();
+                runOnUiThread(() -> {
+                    if (response.isSuccessful()) {
                         try {
-                            String token = response.optString("token", null);
-                            long exp = response.optLong("exp", 0);
+                            JsonObject jsonObject = JsonParser.parseString(resp).getAsJsonObject();
+                            String token = jsonObject.get("token").getAsString();
 
-                            if (token != null) {
-                                // if server doesn't return exp, default to 1 day
-                                if (exp == 0) {
-                                    exp = (System.currentTimeMillis() / 1000) + 86400;
-                                }
-                                MyAppPrefs prefs = new MyAppPrefs(LoginActivity.this);
-                                prefs.saveToken(token, exp);
-                                Toast.makeText(LoginActivity.this, "Login berhasil", Toast.LENGTH_SHORT).show();
-                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                finish();
-                            } else {
-                                Toast.makeText(LoginActivity.this, "Login gagal: token kosong", Toast.LENGTH_SHORT).show();
-                            }
+                            // simpan token
+                            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+                            prefs.edit().putString(KEY_TOKEN, token).apply();
+
+                            Toast.makeText(LoginActivity.this, "Login sukses!", Toast.LENGTH_SHORT).show();
+
+                            // pindah ke MainActivity
+                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            finish();
+
                         } catch (Exception e) {
-                            Log.e(TAG, "parse error", e);
-                            Toast.makeText(LoginActivity.this, "Login gagal: parsing response", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "Login gagal (parse error)", Toast.LENGTH_SHORT).show();
                         }
-                    },
-                    error -> {
-                        Log.e(TAG, "request error", error);
-                        Toast.makeText(LoginActivity.this, "Network error: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                    });
-
-            queue.add(req);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error building request", Toast.LENGTH_SHORT).show();
-        }
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Login gagal: " + resp, Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
     }
 }
