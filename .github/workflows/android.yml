@@ -51,3 +51,19 @@ jobs:
         with:
           name: release-apk
           path: app/build/outputs/apk/release/*.apk
+
+      # 8. Build AAB Release
+      - name: Build Release AAB
+        run: |
+          ./gradlew :app:bundleRelease --warning-mode all \
+            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/yoga.jks \
+            -Pandroid.injected.signing.store.password=${{ secrets.KEYSTORE_PASSWORD }} \
+            -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
+            -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}
+
+      # 9. Upload hasil AAB
+      - name: Upload Release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-aab
+          path: app/build/outputs/bundle/release/*.aab
