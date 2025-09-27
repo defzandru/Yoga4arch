@@ -1,14 +1,16 @@
 package com.yoga4arch.academy;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.*;
-import androidx.annotation.Nullable;
-import okhttp3.*;
 
+import androidx.annotation.Nullable;
+
+import okhttp3.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,11 +19,11 @@ import java.io.IOException;
 public class RegisterActivity extends Activity {
 
     private EditText edtUsername, edtEmail, edtPassword, edtFullname;
-    private Button btnRegister;
+    private Button btnRegister, btnGoLogin;
     private ProgressBar progress;
     private TextView tvMessage;
 
-    // Gunakan endpoint plugin custom
+    // Endpoint plugin custom
     private static final String REGISTER_URL_PLUGIN = "https://yoga4archacademy.cloud/wp-json/yoga4arch/v1/register";
 
     private final OkHttpClient client = new OkHttpClient();
@@ -36,10 +38,16 @@ public class RegisterActivity extends Activity {
         edtPassword = findViewById(R.id.edtPassword);
         edtFullname = findViewById(R.id.edtFullname);
         btnRegister = findViewById(R.id.btnRegister);
+        btnGoLogin = findViewById(R.id.btnGoLogin);
         progress = findViewById(R.id.progress);
         tvMessage = findViewById(R.id.tvMessage);
 
         btnRegister.setOnClickListener(v -> attemptRegister());
+        btnGoLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void attemptRegister() {
@@ -85,9 +93,17 @@ public class RegisterActivity extends Activity {
                     btnRegister.setEnabled(true);
                     if (response.isSuccessful()) {
                         tvMessage.setText("Registrasi berhasil. Silakan login.");
+                        tvMessage.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+
+                        // ⬇️ Redirect otomatis ke LoginActivity
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                        finish();
+
                     } else {
                         String msg = parseMessage(respBody);
                         tvMessage.setText("Gagal: " + msg + " (HTTP " + response.code() + ")");
+                        tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
                     }
                 });
             }
@@ -115,6 +131,7 @@ public class RegisterActivity extends Activity {
             progress.setVisibility(View.GONE);
             btnRegister.setEnabled(true);
             tvMessage.setText(msg);
+            tvMessage.setTextColor(getResources().getColor(android.R.color.holo_red_dark));
         });
     }
 
