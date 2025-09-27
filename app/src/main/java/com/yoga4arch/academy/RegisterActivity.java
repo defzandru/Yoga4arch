@@ -1,7 +1,6 @@
 package com.yoga4arch.academy;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -22,6 +21,7 @@ public class RegisterActivity extends Activity {
     private ProgressBar progress;
     private TextView tvMessage;
 
+    // Gunakan endpoint plugin custom
     private static final String REGISTER_URL_PLUGIN = "https://yoga4archacademy.cloud/wp-json/yoga4arch/v1/register";
 
     private final OkHttpClient client = new OkHttpClient();
@@ -67,7 +67,6 @@ public class RegisterActivity extends Activity {
 
         RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
 
-        // Try plugin endpoint first (common pattern). If 404/unauthorized, you can handle accordingly.
         Request request = new Request.Builder()
                 .url(REGISTER_URL_PLUGIN)
                 .post(body)
@@ -76,12 +75,9 @@ public class RegisterActivity extends Activity {
 
         client.newCall(request).enqueue(new Callback() {
             @Override public void onFailure(Call call, IOException e) {
-                // fallback: try core endpoint (may require admin auth)
-                runOnUiThread(() -> {
-                    // try core endpoint
-                    tryCoreCreate(json);
-                });
+                runOnUiThread(() -> showError("Network error: " + e.getMessage()));
             }
+
             @Override public void onResponse(Call call, Response response) throws IOException {
                 final String respBody = response.body() != null ? response.body().string() : "";
                 runOnUiThread(() -> {
@@ -89,36 +85,6 @@ public class RegisterActivity extends Activity {
                     btnRegister.setEnabled(true);
                     if (response.isSuccessful()) {
                         tvMessage.setText("Registrasi berhasil. Silakan login.");
-                        // optionally navigate to login or WebView
-                    } else {
-                        // show server message if present
-                        String msg = parseMessage(respBody);
-                        tvMessage.setText("Gagal: " + msg + " (HTTP " + response.code() + ")");
-                    }
-                });
-            }
-        });
-    }
-
-    private void tryCoreCreate(JSONObject json) {
-        RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
-        Request reqCore = new Request.Builder()
-                .url(REGISTER_URL_CORE)
-                .post(body)
-                .header("Accept", "application/json")
-                .build();
-
-        client.newCall(reqCore).enqueue(new Callback() {
-            @Override public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> showError("Network error: " + e.getMessage()));
-            }
-            @Override public void onResponse(Call call, Response response) throws IOException {
-                final String respBody = response.body() != null ? response.body().string() : "";
-                runOnUiThread(() -> {
-                    progress.setVisibility(View.GONE);
-                    btnRegister.setEnabled(true);
-                    if (response.isSuccessful()) {
-                        tvMessage.setText("Registrasi berhasil (core). Silakan login.");
                     } else {
                         String msg = parseMessage(respBody);
                         tvMessage.setText("Gagal: " + msg + " (HTTP " + response.code() + ")");
@@ -158,7 +124,6 @@ public class RegisterActivity extends Activity {
             JSONObject j = new JSONObject(body);
             if (j.has("message")) return j.optString("message");
             if (j.has("data")) return j.optString("data");
-            // or common WP REST error structure
             if (j.has("code")) return j.optString("code");
             return body;
         } catch (JSONException e) {
