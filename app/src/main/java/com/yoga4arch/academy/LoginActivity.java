@@ -18,6 +18,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView tvMessage;
 
     private static final String LOGIN_URL = "https://yoga4archacademy.cloud/wp-json/jwt-auth/v1/token";
+    private static final String PREF_NAME = "MyAppPrefs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
