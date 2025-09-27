@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public class RegisterActivity extends Activity {
 
-    private EditText edtUsername, edtEmail, edtPassword, edtFullName;
+    private EditText edtUsername, edtEmail, edtPassword, edtFullname;
     private Button btnRegister;
     private ProgressBar progress;
     private TextView tvMessage;
@@ -34,7 +34,7 @@ public class RegisterActivity extends Activity {
         edtUsername = findViewById(R.id.edtUsername);
         edtEmail = findViewById(R.id.edtEmail);
         edtPassword = findViewById(R.id.edtPassword);
-        edtFullName = findViewById(R.id.edtFullName);
+        edtFullname = findViewById(R.id.edtFullname);
         btnRegister = findViewById(R.id.btnRegister);
         progress = findViewById(R.id.progress);
         tvMessage = findViewById(R.id.tvMessage);
@@ -47,7 +47,7 @@ public class RegisterActivity extends Activity {
         String username = edtUsername.getText().toString().trim();
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString();
-        String fullname = edtFullName.getText().toString().trim();
+        String fullname = edtFullname.getText().toString().trim();
 
         if (!validate(username, email, password)) return;
 
