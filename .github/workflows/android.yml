@@ -24,7 +24,7 @@ jobs:
 
       # 3. Setup Gradle cache & CLI
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       # 4. Generate gradlew (jika belum ada di repo)
       - name: Generate Gradle Wrapper
@@ -34,13 +34,13 @@ jobs:
 
       # 5. Decode keystore dari secret
       - name: Prepare Keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > $GITHUB_WORKSPACE/yoga4archacademy.p12
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > $GITHUB_WORKSPACE/yoga.jks
 
       # 6. Build APK Release
       - name: Build Release APK
         run: |
           ./gradlew :app:assembleRelease --warning-mode all \
-            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/yoga4archacademy.p12 \
+            -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/yoga.jks \
             -Pandroid.injected.signing.store.password=${{ secrets.STORE_PASSWORD }} \
             -Pandroid.injected.signing.key.alias=${{ secrets.KEY_ALIAS }} \
             -Pandroid.injected.signing.key.password=${{ secrets.KEY_PASSWORD }}

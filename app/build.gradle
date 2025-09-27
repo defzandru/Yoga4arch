@@ -19,7 +19,7 @@ android {
     signingConfigs {
         release {
             // File keystore harus ada di root project atau sesuaikan path-nya
-            storeFile file("yoga4archacademy.p12")
+            storeFile file("yoga.jks")
             storePassword System.getenv("KEYSTORE_PASSWORD")
             keyAlias System.getenv("KEY_ALIAS")
             keyPassword System.getenv("KEY_PASSWORD")
