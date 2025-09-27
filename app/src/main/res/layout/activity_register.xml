@@ -128,6 +128,15 @@
                     android:layout_gravity="center"
                     android:layout_marginTop="12dp"/>
 
+                <Button
+                    android:id="@+id/btnGoLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Sudah punya akun? Login"
+                    android:backgroundTint="@android:color/darker_gray"
+                    android:textColor="@android:color/white"
+                    android:layout_marginTop="12dp"/>    
+
                 <!-- Pesan / error -->
                 <TextView
                     android:id="@+id/tvMessage"
