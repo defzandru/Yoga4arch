@@ -18,12 +18,13 @@ import org.json.JSONObject;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final String TAG = "LoginActivity";
-    private static final String LOGIN_URL = "https://yoga4archacademy.com/wp-json/jwt-auth/v1/token";
-
-    EditText etUsername, etPassword;
-    Button btnLogin;
-    RequestQueue queue;
+    private EditText edtUsername, edtPassword;
+    private Button btnLogin;
+    private OkHttpClient client = new OkHttpClient();
+    private static final String BASE_URL = "https://yoga4archacademy.cloud";
+    private static final String LOGIN_URL = BASE_URL + "/wp-json/jwt-auth/v1/token";
+    private static final String PREF_NAME = "MyAppPrefs";
+    private static final String KEY_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3lvZ2E0YXJjaGFjYWRlbXkuY2xvdWQiLCJpYXQiOjE3NTg5NjM5NTIsIm5iZiI6MTc1ODk2Mzk1MiwiZXhwIjoxNzU5NTY4NzUyLCJkYXRhIjp7InVzZXIiOnsiaWQiOiIxIn19fQ.sq1VrleZw8E9cYsvuuos2_NF7p3u1yEk__Vi2vXt1a8";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
