@@ -1,64 +1,51 @@
 package com.yoga4arch.academy;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
-    private static final String USER_URL = "https://yoga4archacademy.com/";
-
-    TextView tvInfo;
-    Button btnLogout;
-    RequestQueue queue;
-    MyAppPrefs prefs;
+    private WebView webView;
+    private static final String PREF_NAME = "MyAppPrefs";
+    private static final String KEY_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3lvZ2E0YXJjaGFjYWRlbXkuY2xvdWQiLCJpYXQiOjE3NTg5NjM5NTIsIm5iZiI6MTc1ODk2Mzk1MiwiZXhwIjoxNzU5NTY4NzUyLCJkYXRhIjp7InVzZXIiOnsiaWQiOiIxIn19fQ.sq1VrleZw8E9cYsvuuos2_NF7p3u1yEk__Vi2vXt1a8";
+    private static final String BASE_URL = "https://yoga4archacademy.cloud/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        tvInfo = findViewById(R.id.tvInfo);
-        btnLogout = findViewById(R.id.btnLogout);
-        queue = Volley.newRequestQueue(this);
-        prefs = new MyAppPrefs(this);
+        webView = new WebView(this);
+        setContentView(webView);
 
-        loadProfile();
+        SharedPreferences prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        String token = prefs.getString(KEY_TOKEN, null);
 
-        btnLogout.setOnClickListener(v -> {
-            prefs.clear();
-            finish();
-        });
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+
+        // Supaya WebView tetap di aplikasi (tidak buka browser eksternal)
+        webView.setWebViewClient(new WebViewClient());
+
+        // Load URL utama (kalau mau bisa diarahkan ke halaman tertentu)
+        if (token != null) {
+            webView.loadUrl(BASE_URL);
+        } else {
+            // fallback kalau token null (misalnya langsung balik ke login)
+            webView.loadUrl(BASE_URL);
+        }
     }
 
-    private void loadProfile() {
-        StringRequest req = new StringRequest(Request.Method.GET, USER_URL,
-                response -> {
-                    tvInfo.setText(response);
-                },
-                error -> {
-                    Log.e(TAG, "profile error", error);
-                    Toast.makeText(MainActivity.this, "Failed to load profile", Toast.LENGTH_SHORT).show();
-                }) {
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> headers = new HashMap<>();
-                String token = prefs.getToken();
-                if (token != null) {
-                    headers.put("Authorization", "Bearer " + token);
-                }
-                return headers;
-            }
-        };
-
-        queue.add(req);
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
     }
 }
