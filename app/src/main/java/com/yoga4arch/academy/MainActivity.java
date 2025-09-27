@@ -1,10 +1,14 @@
 package com.yoga4arch.academy;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -28,14 +32,32 @@ public class MainActivity extends AppCompatActivity {
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
 
-        // Supaya WebView tetap di aplikasi (tidak buka browser eksternal)
-        webView.setWebViewClient(new WebViewClient());
+        // WebViewClient dengan handler link eksternal
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
 
-        // Load URL utama (kalau mau bisa diarahkan ke halaman tertentu)
+                // http & https tetap di WebView
+                if ("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme())) {
+                    return false;
+                }
+
+                // selain itu lempar ke aplikasi lain
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Tidak bisa membuka link: " + uri.toString(), Toast.LENGTH_SHORT).show();
+                }
+                return true;
+            }
+        });
+
+        // Load URL utama
         if (token != null) {
             webView.loadUrl(BASE_URL);
         } else {
-            // fallback kalau token null (misalnya langsung balik ke login)
             webView.loadUrl(BASE_URL);
         }
     }
