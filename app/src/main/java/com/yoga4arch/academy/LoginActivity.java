@@ -1,109 +1,136 @@
 package com.yoga4arch.academy;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
+import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.*;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import okhttp3.*;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-
-import org.json.JSONObject;
-
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends Activity {
 
     private EditText edtUsername, edtPassword;
-    private Button btnLogin;
-    private OkHttpClient client = new OkHttpClient();
-    private static final String BASE_URL = "https://yoga4archacademy.cloud";
-    private static final String LOGIN_URL = BASE_URL + "/wp-json/jwt-auth/v1/token";
-    private static final String PREF_NAME = "MyAppPrefs";
-    private static final String KEY_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3lvZ2E0YXJjaGFjYWRlbXkuY2xvdWQiLCJpYXQiOjE3NTg5NjM5NTIsIm5iZiI6MTc1ODk2Mzk1MiwiZXhwIjoxNzU5NTY4NzUyLCJkYXRhIjp7InVzZXIiOnsiaWQiOiIxIn19fQ.sq1VrleZw8E9cYsvuuos2_NF7p3u1yEk__Vi2vXt1a8";
+    private Button btnLogin, btnGoRegister;
+    private ProgressBar progress;
+    private TextView tvMessage;
+
+    private static final String LOGIN_URL = "https://yoga4archacademy.cloud/wp-json/jwt-auth/v1/token";
+
+    private final OkHttpClient client = new OkHttpClient();
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
         edtUsername = findViewById(R.id.edtUsername);
         edtPassword = findViewById(R.id.edtPassword);
         btnLogin = findViewById(R.id.btnLogin);
+        btnGoRegister = findViewById(R.id.btnGoRegister);
+        progress = new ProgressBar(this);
+        tvMessage = new TextView(this);
 
-        btnLogin.setOnClickListener(v -> doLogin());
+        btnLogin.setOnClickListener(v -> attemptLogin());
+        btnGoRegister.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+            finish();
+        });
     }
 
-    private void doLogin() {
+    private void attemptLogin() {
+        tvMessage.setText("");
         String username = edtUsername.getText().toString().trim();
-        String password = edtPassword.getText().toString().trim();
+        String password = edtPassword.getText().toString();
 
-        if (username.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Isi username & password!", Toast.LENGTH_SHORT).show();
+        if (!validate(username, password)) return;
+
+        progress.setVisibility(View.VISIBLE);
+        btnLogin.setEnabled(false);
+
+        JSONObject json = new JSONObject();
+        try {
+            json.put("username", username);
+            json.put("password", password);
+        } catch (JSONException e) {
+            showError("JSON error: " + e.getMessage());
             return;
         }
 
-        MediaType JSON = MediaType.get("application/json; charset=utf-8");
-        String json = "{ \"username\":\"" + username + "\", \"password\":\"" + password + "\" }";
-        RequestBody body = RequestBody.create(json, JSON);
+        RequestBody body = RequestBody.create(
+                json.toString(),
+                MediaType.get("application/json; charset=utf-8")
+        );
 
         Request request = new Request.Builder()
                 .url(LOGIN_URL)
                 .post(body)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Accept", "application/json")
+                .header("Accept", "application/json")
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(() ->
-                        Toast.makeText(LoginActivity.this, "Login gagal: " + e.getMessage(), Toast.LENGTH_LONG).show()
-                );
+            @Override public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> showError("Network error: " + e.getMessage()));
             }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String resp = response.body().string();
+            @Override public void onResponse(Call call, Response response) throws IOException {
+                final String respBody = response.body() != null ? response.body().string() : "";
                 runOnUiThread(() -> {
+                    progress.setVisibility(View.GONE);
+                    btnLogin.setEnabled(true);
                     if (response.isSuccessful()) {
-                        try {
-                            JsonObject jsonObject = JsonParser.parseString(resp).getAsJsonObject();
-                            String token = jsonObject.get("token").getAsString();
-
-                            // simpan token
-                            SharedPreferences prefs = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-                            prefs.edit().putString(KEY_TOKEN, token).apply();
-
-                            Toast.makeText(LoginActivity.this, "Login sukses!", Toast.LENGTH_SHORT).show();
-
-                            // pindah ke MainActivity
-                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                            finish();
-
-                        } catch (Exception e) {
-                            Toast.makeText(LoginActivity.this, "Login gagal (parse error)", Toast.LENGTH_SHORT).show();
-                        }
+                        tvMessage.setText("Login berhasil ✅");
+                        // TODO: redirect ke MainActivity setelah login sukses
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Login gagal: " + resp, Toast.LENGTH_LONG).show();
+                        String msg = parseMessage(respBody);
+                        tvMessage.setText("Gagal: " + msg + " (HTTP " + response.code() + ")");
                     }
                 });
             }
         });
+    }
+
+    private boolean validate(String username, String password) {
+        if (TextUtils.isEmpty(username)) {
+            edtUsername.setError("Username wajib diisi");
+            return false;
+        }
+        if (TextUtils.isEmpty(password)) {
+            edtPassword.setError("Password wajib diisi");
+            return false;
+        }
+        return true;
+    }
+
+    private void showError(String msg) {
+        runOnUiThread(() -> {
+            progress.setVisibility(View.GONE);
+            btnLogin.setEnabled(true);
+            tvMessage.setText(msg);
+        });
+    }
+
+    private String parseMessage(String body) {
+        if (body == null) return "No response body";
+        try {
+            JSONObject j = new JSONObject(body);
+            if (j.has("message")) return j.optString("message");
+            if (j.has("error")) return j.optString("error");
+            return body;
+        } catch (JSONException e) {
+            return body.length() > 200 ? body.substring(0, 200) : body;
+        }
     }
 }
