@@ -1,117 +1,141 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/yoga_layer"
-    tools:context=".RegisterActivity">
+    android:layout_height="match_parent">
+
+    <!-- Background -->
+    <ImageView
+        android:id="@+id/bgImage"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/yoga_layer"
+        android:scaleType="centerCrop"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Logo -->
     <ImageView
-        android:id="@+id/logo"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:id="@+id/imgLogo"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
         android:src="@drawable/logo"
+        android:scaleType="fitCenter"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/cardRegister"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:contentDescription="Logo"
-        android:layout_marginBottom="16dp"/>
+        app:layout_constraintBottom_toTopOf="@id/cardForm"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_bias="0.4"/>
 
-    <!-- Card Register -->
+    <!-- Card -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/cardRegister"
+        android:id="@+id/cardForm"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="24dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="6dp"
-        app:layout_constraintTop_toBottomOf="@id/logo"
+        android:layout_margin="20dp"
+        app:cardCornerRadius="20dp"
+        app:cardBackgroundColor="#CCFFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/imgLogo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.0">
 
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="20dp"
-            android:gravity="center_horizontal">
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-            <!-- Title -->
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="REGISTER"
-                android:textSize="20sp"
                 android:textStyle="bold"
+                android:textSize="20sp"
                 android:gravity="center"
-                android:layout_marginBottom="4dp"/>
+                android:textColor="#000000"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:text="Yoga4arch Academy"
                 android:textSize="16sp"
                 android:gravity="center"
-                android:layout_marginBottom="16dp"/>
+                android:textColor="#000000"
+                android:layout_marginBottom="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
 
-            <!-- Input Username -->
             <EditText
-                android:id="@+id/etUsername"
+                android:id="@+id/edtUsername"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Username"
-                android:inputType="textPersonName"/>
+                android:padding="12dp"/>
 
-            <!-- Input Email -->
             <EditText
-                android:id="@+id/etEmail"
+                android:id="@+id/edtEmail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Email"
-                android:inputType="textEmailAddress"
+                android:padding="12dp"
                 android:layout_marginTop="8dp"/>
 
-            <!-- Input Password -->
             <EditText
-                android:id="@+id/etPassword"
+                android:id="@+id/edtPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Password (min 8)"
                 android:inputType="textPassword"
+                android:padding="12dp"
                 android:layout_marginTop="8dp"/>
 
-            <!-- Input Nama Lengkap -->
             <EditText
-                android:id="@+id/etFullname"
+                android:id="@+id/edtFullname"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Nama Lengkap (opsional)"
-                android:inputType="textPersonName"
+                android:padding="12dp"
                 android:layout_marginTop="8dp"/>
 
-            <!-- Tombol Daftar -->
             <Button
                 android:id="@+id/btnRegister"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="DAFTAR"
-                android:backgroundTint="@color/purple_700"
-                android:textColor="@android:color/white"
+                android:backgroundTint="#3f08ba"
+                android:textColor="#ffffff"
                 android:layout_marginTop="16dp"/>
 
-            <!-- Tombol ke Login -->
             <Button
                 android:id="@+id/btnGoLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="SUDAH PUNYA AKUN? LOGIN"
-                android:backgroundTint="@color/darker_gray"
-                android:textColor="@android:color/white"
+                android:backgroundTint="#888888"
+                android:textColor="#ffffff"
                 android:layout_marginTop="8dp"/>
+
+            <ProgressBar
+                android:id="@+id/progress"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:layout_marginTop="12dp"/>
+
+            <TextView
+                android:id="@+id/tvMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="#000000"
+                android:layout_marginTop="8dp"/>
+
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
