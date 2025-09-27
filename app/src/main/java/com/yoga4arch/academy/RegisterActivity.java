@@ -22,11 +22,7 @@ public class RegisterActivity extends Activity {
     private ProgressBar progress;
     private TextView tvMessage;
 
-    // Ganti sesuai endpoint server Anda:
-    // 1) coba /wp-json/wp/v2/users/register (plugin) atau
-    // 2) fallback ke /wp-json/wp/v2/users (membutuhkan autentikasi server)
-    private static final String REGISTER_URL_PLUGIN = "https://yoga4archacademy.cloud/wp-json/wp/v2/users/register";
-    private static final String REGISTER_URL_CORE = "https://yoga4archacademy.cloud/wp-json/wp/v2/users";
+    private static final String REGISTER_URL_PLUGIN = "https://yoga4archacademy.cloud/wp-json/yoga4arch/v1/register";
 
     private final OkHttpClient client = new OkHttpClient();
 
